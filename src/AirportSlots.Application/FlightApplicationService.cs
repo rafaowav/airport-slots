@@ -1,3 +1,4 @@
+using System.Text.Json;
 using AirportSlots.Domain;
 using AirportSlots.Infrastructure;
 
@@ -10,7 +11,11 @@ public class FlightApplicationService
     private readonly EventRepository _eventRepository;
     private readonly SeasonUsageRepository _seasonUsageRepository;
 
-    public FlightApplicationService(FlightRepository flightRepository, GateRepository gateRepository, EventRepository eventRepository, SeasonUsageRepository seasonUsageRepository)
+    public FlightApplicationService(
+        FlightRepository flightRepository,
+        GateRepository gateRepository,
+        EventRepository eventRepository,
+        SeasonUsageRepository seasonUsageRepository)
     {
         _flightRepository = flightRepository;
         _gateRepository = gateRepository;
@@ -27,18 +32,24 @@ public class FlightApplicationService
     {
         var period = new SlotPeriod(start, end);
         _flightRepository.ConfirmSlot(flightId, period);
-        _eventRepository.Add(flightId, "SlotConfirmado", $"{{ "inicio": "{start:O}", "fim": "{end:O}" }}");
+
+        var payload = JsonSerializer.Serialize(new { inicio = start, fim = end });
+        _eventRepository.Add(flightId, "SlotConfirmado", payload);
     }
 
     public void AssignGate(Guid flightId, string gateCode)
     {
         _gateRepository.AssignGateToFlight(flightId, gateCode);
-        _eventRepository.Add(flightId, "GateAtribuido", $"{{ "gateCode": "{gateCode}" }}");
+
+        var payload = JsonSerializer.Serialize(new { gateCode });
+        _eventRepository.Add(flightId, "GateAtribuido", payload);
     }
 
     public void CancelFlight(Guid flightId)
     {
         _flightRepository.Cancel(flightId);
-        _eventRepository.Add(flightId, "SlotLiberado", $"{{ "flightId": "{flightId}" }}");
+
+        var payload = JsonSerializer.Serialize(new { flightId });
+        _eventRepository.Add(flightId, "SlotLiberado", payload);
     }
 }

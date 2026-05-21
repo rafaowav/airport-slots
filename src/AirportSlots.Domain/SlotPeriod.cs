@@ -1,10 +1,18 @@
 namespace AirportSlots.Domain;
 
-public record SlotPeriod(DateTime Start, DateTime End)
+public class SlotPeriod
 {
-    public SlotPeriod : this()
+    public DateTime Start { get; }
+    public DateTime End { get; }
+
+    public SlotPeriod(DateTime start, DateTime end)
     {
-        if (End <= Start)
-            throw new InvalidOperationException("O fim do período deve ser maior que o início.");
+        if (end <= start)
+        {
+            throw new ArgumentException("O fim do período deve ser maior que o início.");
+        }
+
+        Start = start;
+        End = end;
     }
 }
